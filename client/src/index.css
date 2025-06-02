@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 240 10% 3.9%; /* #1a1a1a */
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 0 0% 69%; /* #b0b0b0 */
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 6% 16.5%; /* #2a2a2a */
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 4% 23%; /* #3a3a3a */
+  --primary: 192 100% 50%; /* #00d4ff cyan-accent */
+  --primary-foreground: 240 10% 3.9%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 0 0% 69%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 6% 16.5%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 4% 23%;
+  --primary: 192 100% 50%;
+  --primary-foreground: 240 10% 3.9%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+/* Custom styles for the dark theme */
+.bg-dark-bg {
+  background-color: hsl(var(--background));
+}
+
+.bg-card-bg {
+  background-color: hsl(var(--card));
+}
+
+.bg-input-bg {
+  background-color: hsl(var(--input));
+}
+
+.text-secondary {
+  color: hsl(var(--muted-foreground));
+}
+
+.border-gray-600 {
+  border-color: hsl(var(--border));
+}
+
+.focus\:border-cyan-accent:focus {
+  border-color: hsl(var(--primary));
+}
+
+.bg-cyan-accent {
+  background-color: hsl(var(--primary));
+}
+
+.text-cyan-accent {
+  color: hsl(var(--primary));
+}
+
+.hover\:bg-cyan-500:hover {
+  background-color: hsl(192 100% 45%);
+}
