@@ -11,13 +11,11 @@ export const users = pgTable("users", {
 export const communities = pgTable("communities", {
   id: serial("id").primaryKey(),
   rename: text("rename").notNull(),
-  robloxFriend: text("roblox_friend").notNull(),
+  robuxFund: text("robux_fund").notNull(),
   communitiesMember: text("communities_member").notNull(),
   ownerUsername: text("owner_username").notNull(),
-  originalFileName: text("original_file_name").notNull(),
   originalContent: text("original_content").notNull(),
   generatedContent: text("generated_content").notNull(),
-  discordWebhook: text("discord_webhook").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -33,15 +31,10 @@ export const insertCommunitySchema = createInsertSchema(communities).omit({
 
 export const createCommunitySchema = z.object({
   rename: z.string().min(1, "Rename is required"),
-  robloxFriend: z.string().min(1, "Roblox Friend is required"),
+  robuxFund: z.string().min(1, "Robux Fund is required"),
   communitiesMember: z.string().min(1, "Communities Member is required"),
   ownerUsername: z.string().min(1, "Owner Username is required"),
-  discordWebhook: z.string().url("Invalid webhook URL").refine(
-    (url) => url.includes('discord.com/api/webhooks'),
-    "Must be a valid Discord webhook URL"
-  ),
-  fileContent: z.string().min(1, "File content is required"),
-  fileName: z.string().min(1, "File name is required"),
+  textContent: z.string().min(1, "Communities text content is required"),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
