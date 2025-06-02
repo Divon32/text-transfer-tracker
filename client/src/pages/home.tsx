@@ -202,19 +202,7 @@ export default function Home() {
                   {errors.ownerUsername && <p className="text-red-500 text-sm mt-1">{errors.ownerUsername}</p>}
                 </div>
 
-                {/* Discord Webhook Input */}
-                <div>
-                  <Label htmlFor="discordWebhook" className="sr-only">Discord Webhook URL</Label>
-                  <Input
-                    id="discordWebhook"
-                    type="url"
-                    placeholder="Discord Webhook URL"
-                    value={formData.discordWebhook}
-                    onChange={(e) => handleInputChange("discordWebhook", e.target.value)}
-                    className="bg-input-bg border-gray-600 text-white placeholder:text-secondary focus:border-cyan-accent"
-                  />
-                  {errors.discordWebhook && <p className="text-red-500 text-sm mt-1">{errors.discordWebhook}</p>}
-                </div>
+
 
                 {/* Start Making Button */}
                 <Button
