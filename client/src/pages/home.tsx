@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Play, Upload, Loader2, PlayCircle, Volume2, Expand } from "lucide-react";
+import { ArrowLeft, Play, Loader2, PlayCircle, Volume2, Expand } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -11,28 +12,22 @@ import { z } from "zod";
 
 const createCommunitySchema = z.object({
   rename: z.string().min(1, "Rename is required"),
-  robloxFriend: z.string().min(1, "Roblox Friend is required"),
+  robuxFund: z.string().min(1, "Robux Fund is required"),
   communitiesMember: z.string().min(1, "Communities Member is required"),
   ownerUsername: z.string().min(1, "Owner Username is required"),
-  discordWebhook: z.string().url("Invalid webhook URL").refine(
-    (url) => url.includes('discord.com/api/webhooks'),
-    "Must be a valid Discord webhook URL"
-  ),
-  fileContent: z.string().min(1, "File content is required"),
-  fileName: z.string().min(1, "File name is required"),
+  textContent: z.string().min(1, "Communities text content is required"),
 });
 
 type CreateCommunityData = z.infer<typeof createCommunitySchema>;
 
 export default function Home() {
   const { toast } = useToast();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     rename: "",
-    robloxFriend: "",
+    robuxFund: "",
     communitiesMember: "",
     ownerUsername: "",
-    discordWebhook: "",
+    textContent: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -49,12 +44,11 @@ export default function Home() {
       // Reset form
       setFormData({
         rename: "",
-        robloxFriend: "",
+        robuxFund: "",
         communitiesMember: "",
         ownerUsername: "",
-        discordWebhook: "",
+        textContent: "",
       });
-      setSelectedFile(null);
       setErrors({});
     },
     onError: (error: any) => {
@@ -67,23 +61,6 @@ export default function Home() {
     },
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-        setSelectedFile(file);
-        setErrors(prev => ({ ...prev, file: "" }));
-      } else {
-        toast({
-          title: "Invalid File",
-          description: "Please select a valid .txt file",
-          variant: "destructive",
-        });
-        e.target.value = '';
-      }
-    }
-  };
-
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -91,34 +68,12 @@ export default function Home() {
     }
   };
 
-  const readFileContent = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target?.result as string);
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsText(file);
-    });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!selectedFile) {
-      setErrors(prev => ({ ...prev, file: "Please select a communities file" }));
-      return;
-    }
 
     try {
-      const fileContent = await readFileContent(selectedFile);
-      
-      const dataToSubmit = {
-        ...formData,
-        fileContent,
-        fileName: selectedFile.name,
-      };
-
       // Validate with zod
-      const validatedData = createCommunitySchema.parse(dataToSubmit);
+      const validatedData = createCommunitySchema.parse(formData);
       createCommunityMutation.mutate(validatedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -132,7 +87,7 @@ export default function Home() {
       } else {
         toast({
           title: "Error",
-          description: "Failed to read file content",
+          description: "Failed to process form data",
           variant: "destructive",
         });
       }
@@ -177,28 +132,18 @@ export default function Home() {
               <p className="text-secondary text-center mb-6">Making communities</p>
               
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* File Input */}
+                {/* Communities Text Input */}
                 <div>
-                  <Label htmlFor="file" className="sr-only">Communities File</Label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      id="file"
-                      accept=".txt"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                    <div
-                      onClick={() => document.getElementById('file')?.click()}
-                      className="bg-input-bg rounded px-4 py-3 cursor-pointer hover:bg-gray-500 transition-colors border border-gray-600 flex items-center justify-between"
-                    >
-                      <span className={selectedFile ? "text-white" : "text-secondary"}>
-                        {selectedFile ? selectedFile.name : "Enter communities file"}
-                      </span>
-                      <Upload className="w-4 h-4 text-secondary" />
-                    </div>
-                  </div>
-                  {errors.file && <p className="text-red-500 text-sm mt-1">{errors.file}</p>}
+                  <Label htmlFor="textContent" className="sr-only">Enter communities text</Label>
+                  <Textarea
+                    id="textContent"
+                    placeholder="Enter communities file"
+                    value={formData.textContent}
+                    onChange={(e) => handleInputChange("textContent", e.target.value)}
+                    className="bg-input-bg border-gray-600 text-white placeholder:text-secondary focus:border-cyan-accent min-h-[100px] resize-none"
+                    rows={4}
+                  />
+                  {errors.textContent && <p className="text-red-500 text-sm mt-1">{errors.textContent}</p>}
                 </div>
 
                 {/* Rename Input */}
@@ -215,18 +160,18 @@ export default function Home() {
                   {errors.rename && <p className="text-red-500 text-sm mt-1">{errors.rename}</p>}
                 </div>
 
-                {/* Roblox Friend Input */}
+                {/* Robux Fund Input */}
                 <div>
-                  <Label htmlFor="robloxFriend" className="sr-only">Roblox Friend</Label>
+                  <Label htmlFor="robuxFund" className="sr-only">Robux Fund</Label>
                   <Input
-                    id="robloxFriend"
+                    id="robuxFund"
                     type="text"
-                    placeholder="Roblox Friend"
-                    value={formData.robloxFriend}
-                    onChange={(e) => handleInputChange("robloxFriend", e.target.value)}
+                    placeholder="Robux Fund"
+                    value={formData.robuxFund}
+                    onChange={(e) => handleInputChange("robuxFund", e.target.value)}
                     className="bg-input-bg border-gray-600 text-white placeholder:text-secondary focus:border-cyan-accent"
                   />
-                  {errors.robloxFriend && <p className="text-red-500 text-sm mt-1">{errors.robloxFriend}</p>}
+                  {errors.robuxFund && <p className="text-red-500 text-sm mt-1">{errors.robuxFund}</p>}
                 </div>
 
                 {/* Communities Member Input */}
