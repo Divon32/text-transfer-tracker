@@ -113,24 +113,18 @@ async function sendToDiscordWebhook(
   content: string,
   rename: string
 ): Promise<void> {
-  const FormData = require('form-data');
-  const form = new FormData();
-  
-  // Create buffer from content
-  const buffer = Buffer.from(content, 'utf-8');
-  
-  form.append('file', buffer, {
-    filename: `${rename}_communities.txt`,
-    contentType: 'text/plain'
-  });
-  
-  form.append('content', `Community file generated: **${rename}**`);
-
   try {
+    // Create a simple message with the content as a code block
+    const payload = {
+      content: `Community file generated: **${rename}**\n\`\`\`\n${content}\n\`\`\``
+    };
+
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      body: form,
-      headers: form.getHeaders()
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
