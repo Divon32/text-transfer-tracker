@@ -5,28 +5,15 @@ import { createCommunitySchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Create community and send to Discord
+  // Create community
   app.post("/api/communities", async (req, res) => {
     try {
       const validatedData = createCommunitySchema.parse(req.body);
-      
+
       // Generate community file content
       const generatedContent = generateCommunityFile(
         validatedData.textContent,
         validatedData
-      );
-
-      // Get webhook URL from environment
-      const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-      if (!webhookUrl) {
-        throw new Error("Discord webhook URL not configured");
-      }
-
-      // Send to Discord webhook
-      await sendToDiscordWebhook(
-        webhookUrl,
-        generatedContent,
-        validatedData.rename
       );
 
       // Store in database
@@ -39,14 +26,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generatedContent: generatedContent,
       });
 
-      res.json({ 
-        success: true, 
-        message: "Community file generated and sent to Discord successfully!",
-        communityId: community.id 
+      res.json({
+        success: true,
+        message: "Community file generated successfully!",
+        communityId: community.id
       });
     } catch (error) {
       console.error("Error creating community:", error);
-      
+
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,
@@ -90,53 +77,20 @@ function generateCommunityFile(
   }
 ): string {
   const lines = originalContent.split('\n').filter(line => line.trim());
-  
+
   let generatedContent = `# Community Configuration Generated on ${new Date().toISOString()}\n`;
   generatedContent += `# Rename: ${formData.rename}\n`;
   generatedContent += `# Robux Fund: ${formData.robuxFund}\n`;
   generatedContent += `# Communities Member: ${formData.communitiesMember}\n`;
   generatedContent += `# Owner Username: ${formData.ownerUsername}\n\n`;
   generatedContent += `# Original Communities Data:\n`;
-  
+
   lines.forEach((line, index) => {
     generatedContent += `${index + 1}. ${line}\n`;
   });
 
   generatedContent += `\n# Processing Complete\n`;
   generatedContent += `# Total Communities: ${lines.length}\n`;
-  
+
   return generatedContent;
-}
-
-async function sendToDiscordWebhook(
-  webhookUrl: string,
-  content: string,
-  rename: string
-): Promise<void> {
-  try {
-    // Create FormData to send file
-    const formData = new FormData();
-    
-    // Create a blob from the content
-    const blob = new Blob([content], { type: 'text/plain' });
-    
-    // Add the file to form data
-    formData.append('files[0]', blob, `${rename}_communities.txt`);
-    formData.append('payload_json', JSON.stringify({
-      content: `Community file generated: **${rename}**`
-    }));
-
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Discord API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-  } catch (error) {
-    console.error("Discord webhook error:", error);
-    throw new Error(`Failed to send to Discord: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
 }
